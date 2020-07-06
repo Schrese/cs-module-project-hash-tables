@@ -109,7 +109,10 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        pass
+        indexOfKey = self.hash_index(key)
+        deleted = self.contents[indexOfKey]
+        self.contents[indexOfKey] = None
+        return deleted
 
 
     def get(self, key):
