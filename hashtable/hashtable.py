@@ -59,7 +59,16 @@ class HashTable:
         """
 
         # Your code here
-        pass
+        FNV_prime = 0x100000001b3 
+        offset_basis = 0xcbf29ce484222325
+        print(FNV_prime, offset_basis)
+        # offset_basis and FNV_prime can use the actual number, but doing it this way gives me some semblance of knowing why they are what they are. They are the hex values of... actually, I'm not sure why they are those numbser still... I thought it was 2^64 ? ... but they don't exactly equal one another?
+        hash = offset_basis
+        for k in key:
+            # This is the "clamping" part
+            hash = hash * FNV_prime
+            hash = hash ^ ord(k)
+        return hash
 
 
     def djb2(self, key):
@@ -69,9 +78,9 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
-        hash = 5381
+        hash = 5381 # according to research, the 5381 seems to be an arbitrary number that can be any number that is prime (BUT I tried and it still works when I use the prime number 97 AND the non-prime number 100). So I'm a bit confused by this
         for k in key:
-            hash = (hash * 33) + ord(k)
+            hash = (hash * 33) + ord(k) # according to my research, the 33 seems to be used all the time. For some reason it's "faster"? Although I'm not sure why yet?
             # print(k)
         return hash
 
@@ -80,9 +89,9 @@ class HashTable:
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
+        return self.fnv1(key) % self.capacity
         # print(key)
-        return self.djb2(key) % self.capacity
+        # return self.djb2(key) % self.capacity
 
     def put(self, key, value):
         """
@@ -168,15 +177,15 @@ if __name__ == "__main__":
     for i in range(1, 13):
         print(ht.get(f"line_{i}"))
 
-    # # Test resizing
-    # old_capacity = ht.get_num_slots()
-    # ht.resize(ht.capacity * 2)
-    # new_capacity = ht.get_num_slots()
+    # Test resizing
+    old_capacity = ht.get_num_slots()
+    ht.resize(ht.capacity * 2)
+    new_capacity = ht.get_num_slots()
 
-    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
-    # # Test if data intact after resizing
-    # for i in range(1, 13):
-    #     print(ht.get(f"line_{i}"))
+    # Test if data intact after resizing
+    for i in range(1, 13):
+        print(ht.get(f"line_{i}"))
 
     print("")
