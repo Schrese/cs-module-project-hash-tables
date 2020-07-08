@@ -61,7 +61,7 @@ class HashTable:
         # Your code here
         FNV_prime = 0x100000001b3 
         offset_basis = 0xcbf29ce484222325
-        print(FNV_prime, offset_basis)
+        # print(FNV_prime, offset_basis)
         # offset_basis and FNV_prime can use the actual number, but doing it this way gives me some semblance of knowing why they are what they are. They are the hex values of... actually, I'm not sure why they are those numbser still... I thought it was 2^64 ? ... but they don't exactly equal one another?
         hash = offset_basis
         for k in key:
@@ -89,9 +89,31 @@ class HashTable:
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        return self.fnv1(key) % self.capacity
+        # return self.fnv1(key) % self.capacity
         # print(key)
-        # return self.djb2(key) % self.capacity
+        return self.djb2(key) % self.capacity
+
+    # This is the old get method, but I'm just using it to check if there are contents at an index for the 'put' method
+    def checkIfContent(self, key): 
+        """
+        Retrieve the value stored with the given key.
+
+        Returns None if the key is not found.
+
+        Implement this.
+        """
+        # Your code here
+        # print('hello')
+        lookup = self.hash_index(key)
+
+        if self.size == 0:
+            return None
+        
+        if self.contents[lookup] is None: 
+            return None
+        
+        else:
+            return self.contents[lookup].value
 
     def put(self, key, value):
         """
@@ -102,10 +124,33 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        newNode = HashTableEntry(key, value)
-        newIndex = self.hash_index(key)
-        self.contents[newIndex] = newNode
-        self.size += 1
+        # newNode = HashTableEntry(key, value)
+        # newIndex = self.hash_index(key)
+        # self.contents[newIndex] = newNode
+        # self.size += 1
+        
+        # REWORKING FOR DAY 2
+        # create a new node and hash it
+        # see if there is anything already at that index (use the 'get' method here)
+        checking = self.checkIfContent(key)
+        # if nothing is at that index, create a new linked list with the new node as the 'head' and the 'next' will point to None
+        if checking is None:
+            # print('omg')
+            newNode = HashTableEntry(key, value)
+            newIndex = self.hash_index(key)
+            self.contents[newIndex] = newNode
+            print(self.contents[newIndex].next)
+            newNode.next = None
+            self.size += 1
+        # if something IS at that index, then iterate through that list to see if that 'key' already exists
+        else:
+            # print('gmo')
+            print(checking)
+            # check if there is only one element in the list. Or rather checking if the first element in the list is the 
+            
+            # If it does exist, then update the value of that node
+            # Otherwise, insert that node at the head of the linked list, be sure to update the 'head' to be the newly inserted node, and set its 'next' pointer to be the old head
+
 
 
 
@@ -133,6 +178,7 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # print('hello')
         lookup = self.hash_index(key)
 
         if self.size == 0:
