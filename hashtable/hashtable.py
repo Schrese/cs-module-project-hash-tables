@@ -133,7 +133,11 @@ class HashTable:
         # create a new node and hash it
         # see if there is anything already at that index (use the 'get' method here)
         checking = self.checkIfContent(key)
+        keyIndex = self.hash_index(key)
+        # print(keyIndex, 'keyIndex from put')
+        # print(checking, 'checking in put')
         # if nothing is at that index, create a new linked list with the new node as the 'head' and the 'next' will point to None
+        # print(self.size)
         if checking is None:
             # print('omg')
             newNode = HashTableEntry(key, value)
@@ -142,16 +146,26 @@ class HashTable:
             # print(self.contents[newIndex].next)
             newNode.next = None
             self.size += 1
+        if self.size >= 0.7 * self.capacity:
+            newCap = self.capacity * 2
+            self.resize(newCap)
         # if something IS at that index, then iterate through that list to see if that 'key' already exists
-        # else:
-        #     # print('gmo')
-        #     print(checking)
+        else:
             # check if there is only one element in the list. Or rather checking if the first element in the list is the 
-            
-            # If it does exist, then update the value of that node
-            # Otherwise, insert that node at the head of the linked list, be sure to update the 'head' to be the newly inserted node, and set its 'next' pointer to be the old head
+            curNode = self.contents[keyIndex]
 
-
+            while curNode:
+                # If it does exist, then update the value of that node
+                if curNode.key == key:
+                    curNode.value =  value
+                # Otherwise, insert that node at the head of the linked list, be sure to update the 'head' to be the newly inserted node, and set its 'next' pointer to be the old head
+                else:
+                    oldHead = curNode
+                    newNode = HashTableEntry(key, value)
+                    self.contents[keyIndex] = newNode
+                    newNode.next = oldHead
+                    self.size += 1
+                curNode = curNode.next
 
 
     def delete(self, key):
@@ -163,10 +177,41 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # indexOfKey = self.hash_index(key)
+        # deleted = self.contents[indexOfKey]
+        # self.contents[indexOfKey] = None
+        # self.size -= 1
+        # return deleted
+
+        #REWORKING FOR COLLISION
+        
         indexOfKey = self.hash_index(key)
-        deleted = self.contents[indexOfKey]
-        self.contents[indexOfKey] = None
-        return deleted
+        # print(self.size, 'in delete')
+        # If there is no content at this index, then there is nothing to delete
+        if self.contents[indexOfKey] is None:
+            return None
+        # if we find a node with the key as the "head" (just the first one listed at that index) then we decrease the size by one, and change the node to be the next node, and return the key for what was deleted
+        elif self.contents[indexOfKey].key == key:
+            self.size -= 1
+            self.contents[indexOfKey] = self.contents[indexOfKey].next
+            return key
+        # otherwise, the key wasn't at the head of the linked list
+        else:
+            # if the current node's 'next' points to None, then it means that it is the only element in the list, and we just need to return because it doesn't match the key input
+            if self.contents[indexOfKey].next is None:
+                return None
+
+            prevNode = None
+            curNode = self.contents[indexOfKey]
+
+            # iterate through linked list and if the key is found somewhere in there, then the previous node needs to point to one past the matching node
+            while curNode:
+                if curNode.key == key:
+                    prevNode.next = curNode.next
+                    self.size -= 1
+                    return key
+                prevNode = curNode
+                curNode = curNode.next
 
 
     def get(self, key):
@@ -191,8 +236,7 @@ class HashTable:
         # store the current node (which is just the 'head', we're not going to call it that, we're just going to have it be what's returned AT that given index without any searching through the linked list)
         lookup = self.hash_index(key)
         curNode = self.contents[lookup]
-        val = curNode.value
-        print(curNode.key, 'from get')
+        # print(curNode.key, 'from get')
         if self.size == 0: 
             return None
         
@@ -217,7 +261,25 @@ class HashTable:
         Implement this.
         """
         # Your code here
-        pass
+        oldList = [None] * self.capacity
+        # Make a new array with double the capacity of the old one
+        # Have the hash table refer to that new array
+        self.contents = self.contents + oldList
+        # print(len(self.contents))
+        # Run through all the nodes in the old hash table array'
+        self.capacity = new_capacity
+        # print(self.capacity)
+        for i in range(self.capacity):
+            entry = self.contents[i]
+            # print(i, entry, 'in resize')
+            if entry is not None:
+                curNode = self.contents[i]
+                while curNode:
+                    # print(self.contents[i].key, 'key')
+                    self.delete(self.contents[i].key)
+                    # Put them in the new hash table array
+                    self.put(curNode.key, curNode.value)
+                    curNode = curNode.next
 
 
 if __name__ == "__main__":
