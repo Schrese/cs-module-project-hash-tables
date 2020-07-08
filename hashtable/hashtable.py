@@ -139,13 +139,13 @@ class HashTable:
             newNode = HashTableEntry(key, value)
             newIndex = self.hash_index(key)
             self.contents[newIndex] = newNode
-            print(self.contents[newIndex].next)
+            # print(self.contents[newIndex].next)
             newNode.next = None
             self.size += 1
         # if something IS at that index, then iterate through that list to see if that 'key' already exists
-        else:
-            # print('gmo')
-            print(checking)
+        # else:
+        #     # print('gmo')
+        #     print(checking)
             # check if there is only one element in the list. Or rather checking if the first element in the list is the 
             
             # If it does exist, then update the value of that node
@@ -179,16 +179,35 @@ class HashTable:
         """
         # Your code here
         # print('hello')
-        lookup = self.hash_index(key)
+        # lookup = self.hash_index(key)
+        # if self.size == 0:
+        #     return None
+        # if self.contents[lookup] is None: 
+        #     return None
+        # else:
+        #     return self.contents[lookup].value
 
-        if self.size == 0:
+        # REWORKING FOR COLLISION
+        # store the current node (which is just the 'head', we're not going to call it that, we're just going to have it be what's returned AT that given index without any searching through the linked list)
+        lookup = self.hash_index(key)
+        curNode = self.contents[lookup]
+        val = curNode.value
+        print(curNode.key, 'from get')
+        if self.size == 0: 
             return None
         
-        if self.contents[lookup] is None: 
+        if self.contents[lookup] is None:
             return None
-        
-        else:
-            return self.contents[lookup].value
+
+        # As long as the current node isn't 'None', I'll search through the node list. 
+        while curNode is not None:
+            # if the key at the current index is the same as the key entered, then return the value of that key
+            if curNode.key == key:
+                return curNode.value
+            curNode = curNode.next
+            # Otherwise set the current node to the current node's 'next' pointer
+        return None
+            # If the key wasn't found, return 'could not find this'
 
     def resize(self, new_capacity):
         """
@@ -223,15 +242,15 @@ if __name__ == "__main__":
     for i in range(1, 13):
         print(ht.get(f"line_{i}"))
 
-    # Test resizing
-    old_capacity = ht.get_num_slots()
-    ht.resize(ht.capacity * 2)
-    new_capacity = ht.get_num_slots()
+    # # Test resizing
+    # old_capacity = ht.get_num_slots()
+    # ht.resize(ht.capacity * 2)
+    # new_capacity = ht.get_num_slots()
 
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
-    # Test if data intact after resizing
-    for i in range(1, 13):
-        print(ht.get(f"line_{i}"))
+    # # Test if data intact after resizing
+    # for i in range(1, 13):
+    #     print(ht.get(f"line_{i}"))
 
     print("")
