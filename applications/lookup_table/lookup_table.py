@@ -1,5 +1,6 @@
 # Your code here
-
+import random
+import math
 
 def slowfun_too_slow(x, y):
     v = math.pow(x, y)
@@ -9,13 +10,21 @@ def slowfun_too_slow(x, y):
 
     return v
 
+cache = {}
 def slowfun(x, y):
     """
     Rewrite slowfun_too_slow() in here so that the program produces the same
     output, but completes quickly instead of taking ages to run.
     """
     # Your code here
-
+    # So... the power is what I need to actually pay attention to (not the x and y). Because several combinations can make the same power. So we're trying to cut down on the amount of time it takes to do the factorial and below
+    # cache = {}
+    v = math.pow(x, y)
+    if v not in cache:
+        cache[v] = math.factorial(v)
+        cache[v] //= (x + y)
+        cache[v] %= 982451653
+    return cache[v]
 
 
 # Do not modify below this line!
