@@ -74,7 +74,7 @@ you built. (Some of these are easier with `dict` since it's more
 full-featured.)
 
 [x] [Lookup Table](applications/lookup_table/)
-[] [Expensive Sequence](applications/expensive_seq/)
+[x] [Expensive Sequence](applications/expensive_seq/)
 [] [Word Count](applications/word_count/)
 [] [No Duplicates](applications/no_dups/)
 [] [Markov Chains](applications/markov/)
