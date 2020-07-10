@@ -2,10 +2,11 @@ import re
 
 def word_count(s):
     counts = {}
-    # def count_inner(s):
-    new_sentence = (re.split(' |,|_|-|!|\+|\.| |\"|\:|\;|\=|\/|\\*|\||\[|\]|\{|\}|\(|\)|\*|\^|\&', s))
-    # new_sentence = (re.split(' |,|_|-|!|\+|\.| |\"|\:|\;|\=|\/|\\|\\r|\\n|\\t|\||\[|\]|\{|\}|\(|\)|\*|\^|\&', s))
-    # print(len(new_sentence))
+    # s= s.splitlines()
+    # print(s)
+    # new_sentence = (re.split(' |,|_|-|!|\+|\.| |\"|\:|\;|\=|\/|\\|\||\[|\]|\{|\}|\(|\)|\*|\^|\&', s))
+    new_sentence = (re.split(' |,|_|-|!|\+|\.| |\"|\:|\;|\=|\/|\\|\\r|\\n|\\t|\||\[|\]|\{|\}|\(|\)|\*|\^|\&', s))
+
 
     if len(new_sentence) <= 1:
         return counts
@@ -15,21 +16,13 @@ def word_count(s):
     new_sentence = [x for x in new_sentence if len(x) > 0]
     for word in new_sentence:
         word = word.lower()
-        print(len(word), 'oaisjdf;oija;oijef')
+        print(word, len(word), 'oaisjdf;oija;oijef')
         if len(word) == 0:
-            # counts.popitem()
             print('found a word')
-        # print(len(word))
-        # if (word in counts) or (len(new_sentence) > 1):
-        # if word in counts and word != '':
         if word in counts:
             counts[word] += 1
         else:
             counts[word] = 1
-    # print(f'{word}: {counts[word]}')
-    # print(counts, counts['hello'], 'from here')
-    # print(counts.keys())
-    # return f'{word}: {counts[word]}'
     print(counts)
     return counts
 
