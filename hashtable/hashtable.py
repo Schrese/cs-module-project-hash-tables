@@ -22,7 +22,9 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
-
+        self.capacity = capacity
+        self.contents = [None] * capacity
+        self.size = 0
 
     def get_num_slots(self):
         """
@@ -52,8 +54,11 @@ class HashTable:
 
         Implement this, and/or DJB2.
         """
-
-        # Your code here
+        hash = 0xcbf29ce484222325
+        for k in key:
+            hash *= 0x100000001b3
+            hash = hash ^ ord(k)
+        return hash
 
 
     def djb2(self, key):
@@ -62,16 +67,18 @@ class HashTable:
 
         Implement this, and/or FNV-1.
         """
-        # Your code here
-
+        hash = 5381 # "5831" seems to be an arbitrary number that works great for this. 
+        for k in key:
+            hash = (hash * 33) + ord(k)
+        return hash
 
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
-        return self.djb2(key) % self.capacity
+        return self.fnv1(key) % self.capacity
+        # return self.djb2(key) % self.capacity
 
     def put(self, key, value):
         """
@@ -82,6 +89,12 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # Create a new hash entry 
+        new_entry = HashTableEntry(key, value)
+        # hash the entry using the hash_index method
+        new_entries_index = self.hash_index(key)
+        # create the value for the newly created index
+        self.contents[new_entries_index] = new_entry
 
 
     def delete(self, key):
@@ -93,6 +106,14 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # hash the key to find the correct index
+        index_of_key = self.hash_index(key)
+        # Store the value to be deleted (for good feedback)
+        to_delete = self.contents[index_of_key]
+        # remove the value from this key's entry
+        self.contents[index_of_key] = None
+        # Return the value that was just deleted 
+        return to_delete
 
 
     def get(self, key):
@@ -104,6 +125,14 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # Hash the key to find the correct index
+        key_index = self.hash_index(key)
+        # If the value for this key is None, then there is nothing to manipulate, so None is returned
+        if self.contents[key_index] is None:
+            return None
+        # Otherwise return the value stored at that key
+        else: 
+            return self.contents[key_index].value
 
 
     def resize(self, new_capacity):
@@ -140,14 +169,14 @@ if __name__ == "__main__":
         print(ht.get(f"line_{i}"))
 
     # Test resizing
-    old_capacity = ht.get_num_slots()
-    ht.resize(ht.capacity * 2)
-    new_capacity = ht.get_num_slots()
+    # old_capacity = ht.get_num_slots()
+    # ht.resize(ht.capacity * 2)
+    # new_capacity = ht.get_num_slots()
 
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
-    # Test if data intact after resizing
-    for i in range(1, 13):
-        print(ht.get(f"line_{i}"))
+    # # Test if data intact after resizing
+    # for i in range(1, 13):
+    #     print(ht.get(f"line_{i}"))
 
     print("")
