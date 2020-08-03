@@ -22,6 +22,9 @@ class HashTable:
 
     def __init__(self, capacity):
         # Your code here
+        self.capacity = capacity
+        self.size = 0
+        self.contents = [None] * capacity
 
 
     def get_num_slots(self):
@@ -35,6 +38,9 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # return self.capacity
+        # pass
+        return self.capacity
 
 
     def get_load_factor(self):
@@ -44,6 +50,9 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        print(self.size)
+        factor = self.size / self.capacity
+        return factor
 
 
     def fnv1(self, key):
@@ -54,6 +63,16 @@ class HashTable:
         """
 
         # Your code here
+        FNV_prime = 0x100000001b3 
+        offset_basis = 0xcbf29ce484222325
+        # print(FNV_prime, offset_basis)
+        # offset_basis and FNV_prime can use the actual number, but doing it this way gives me some semblance of knowing why they are what they are. They are the hex values of... actually, I'm not sure why they are those numbser still... I thought it was 2^64 ? ... but they don't exactly equal one another?
+        hash = offset_basis
+        for k in key:
+            # This is the "clamping" part
+            hash = hash * FNV_prime
+            hash = hash ^ ord(k)
+        return hash
 
 
     def djb2(self, key):
@@ -63,15 +82,42 @@ class HashTable:
         Implement this, and/or FNV-1.
         """
         # Your code here
-
+        hash = 5381 # according to research, the 5381 seems to be an arbitrary number that can be any number that is prime (BUT I tried and it still works when I use the prime number 97 AND the non-prime number 100). So I'm a bit confused by this
+        for k in key:
+            hash = (hash * 33) + ord(k) # according to my research, the 33 seems to be used all the time. For some reason it's "faster"? Although I'm not sure why yet?
+            # print(k)
+        return hash
 
     def hash_index(self, key):
         """
         Take an arbitrary key and return a valid integer index
         between within the storage capacity of the hash table.
         """
-        #return self.fnv1(key) % self.capacity
+        # return self.fnv1(key) % self.capacity
+        # print(key)
         return self.djb2(key) % self.capacity
+
+    # This is the old get method, but I'm just using it to check if there are contents at an index for the 'put' method
+    def checkIfContent(self, key): 
+        """
+        Retrieve the value stored with the given key.
+
+        Returns None if the key is not found.
+
+        Implement this.
+        """
+        # Your code here
+        # print('hello')
+        lookup = self.hash_index(key)
+
+        # if self.size == 0:
+        #     return None
+        
+        if self.contents[lookup] is None: 
+            return None
+        
+        else:
+            return self.contents[lookup].value
 
     def put(self, key, value):
         """
@@ -82,6 +128,49 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # newNode = HashTableEntry(key, value)
+        # newIndex = self.hash_index(key)
+        # self.contents[newIndex] = newNode
+        # self.size += 1
+        
+        # REWORKING FOR DAY 2
+        # create a new node and hash it
+        # see if there is anything already at that index (use the 'get' method here)
+        checking = self.checkIfContent(key)
+        keyIndex = self.hash_index(key)
+        # print(keyIndex, 'keyIndex from put')
+        # print(checking, 'checking in put')
+        # if nothing is at that index, create a new linked list with the new node as the 'head' and the 'next' will point to None
+        # print(self.size)
+        if self.contents[keyIndex] is None:
+            # print('omg')
+            newNode = HashTableEntry(key, value)
+            newIndex = self.hash_index(key)
+            self.contents[newIndex] = newNode
+            # print(self.contents[newIndex].next)
+            newNode.next = None
+            self.size += 1
+        # if something IS at that index, then iterate through that list to see if that 'key' already exists
+        # else:
+            # check if there is only one element in the list. Or rather checking if the first element in the list is the 
+        curNode = self.contents[keyIndex]
+
+        while curNode:
+            # If it does exist, then update the value of that node
+            if curNode.key == key:
+                curNode.value =  value
+            # Otherwise, insert that node at the head of the linked list, be sure to update the 'head' to be the newly inserted node, and set its 'next' pointer to be the old head
+            else:
+                oldHead = curNode
+                newNode = HashTableEntry(key, value)
+                self.contents[keyIndex] = newNode
+                newNode.next = oldHead
+                self.size += 1
+            curNode = curNode.next
+        # if self.size > 0.7 * self.capacity:
+        if self.get_load_factor() > 0.7:
+            newCap = self.capacity * 2
+            self.resize(newCap)
 
 
     def delete(self, key):
@@ -93,6 +182,41 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # indexOfKey = self.hash_index(key)
+        # deleted = self.contents[indexOfKey]
+        # self.contents[indexOfKey] = None
+        # self.size -= 1
+        # return deleted
+
+        #REWORKING FOR COLLISION
+        
+        indexOfKey = self.hash_index(key)
+        # print(self.size, 'in delete')
+        # If there is no content at this index, then there is nothing to delete
+        if self.contents[indexOfKey] is None:
+            return
+        # if we find a node with the key as the "head" (just the first one listed at that index) then we decrease the size by one, and change the node to be the next node, and return the key for what was deleted
+        if self.contents[indexOfKey].key == key:
+            self.size -= 1
+            self.contents[indexOfKey] = self.contents[indexOfKey].next
+            return key
+        # otherwise, the key wasn't at the head of the linked list
+        else:
+            # if the current node's 'next' points to None, then it means that it is the only element in the list, and we just need to return because it doesn't match the key input
+            if self.contents[indexOfKey].next is None:
+                return None
+
+            prevNode = None
+            curNode = self.contents[indexOfKey]
+
+            # iterate through linked list and if the key is found somewhere in there, then the previous node needs to point to one past the matching node
+            while curNode:
+                if curNode.key == key:
+                    prevNode.next = curNode.next
+                    self.size -= 1
+                    return key
+                prevNode = curNode
+                curNode = curNode.next
 
 
     def get(self, key):
@@ -104,7 +228,37 @@ class HashTable:
         Implement this.
         """
         # Your code here
+        # print('hello')
+        # lookup = self.hash_index(key)
+        # if self.size == 0:
+        #     return None
+        # if self.contents[lookup] is None: 
+        #     return None
+        # else:
+        #     return self.contents[lookup].value
 
+        # REWORKING FOR COLLISION
+        # store the current node (which is just the 'head', we're not going to call it that, we're just going to have it be what's returned AT that given index without any searching through the linked list)
+        # print(self.size, self.capacity, self.contents, self.get_load_factor())
+        print(self.size, self.capacity, self.get_load_factor())
+        lookup = self.hash_index(key)
+        curNode = self.contents[lookup]
+        # print(curNode.key, 'from get')
+        if self.size == 0: 
+            return None
+        
+        if self.contents[lookup] is None:
+            return None
+
+        # As long as the current node isn't 'None', I'll search through the node list. 
+        while curNode is not None:
+            # if the key at the current index is the same as the key entered, then return the value of that key
+            if curNode.key == key:
+                return curNode.value
+            curNode = curNode.next
+            # Otherwise set the current node to the current node's 'next' pointer
+        # return None
+            # If the key wasn't found, return 'could not find this'
 
     def resize(self, new_capacity):
         """
@@ -114,7 +268,25 @@ class HashTable:
         Implement this.
         """
         # Your code here
-
+        self.capacity = new_capacity
+        oldList = [None] * self.capacity
+        # Make a new array with double the capacity of the old one
+        # Have the hash table refer to that new array
+        self.contents = self.contents + oldList
+        # print(len(self.contents))
+        # Run through all the nodes in the old hash table array'
+        # print(self.capacity)
+        for i in range(self.capacity):
+            entry = self.contents[i]
+            # print(i, entry, 'in resize')
+            if entry is not None:
+                curNode = self.contents[i]
+                while curNode:
+                    # print(self.contents[i].key, 'key')
+                    self.delete(self.contents[i].key)
+                    # Put them in the new hash table array
+                    self.put(curNode.key, curNode.value)
+                    curNode = curNode.next
 
 
 if __name__ == "__main__":
@@ -139,15 +311,15 @@ if __name__ == "__main__":
     for i in range(1, 13):
         print(ht.get(f"line_{i}"))
 
-    # Test resizing
-    old_capacity = ht.get_num_slots()
-    ht.resize(ht.capacity * 2)
-    new_capacity = ht.get_num_slots()
+    # # Test resizing
+    # old_capacity = ht.get_num_slots()
+    # ht.resize(ht.capacity * 2)
+    # new_capacity = ht.get_num_slots()
 
-    print(f"\nResized from {old_capacity} to {new_capacity}.\n")
+    # print(f"\nResized from {old_capacity} to {new_capacity}.\n")
 
-    # Test if data intact after resizing
-    for i in range(1, 13):
-        print(ht.get(f"line_{i}"))
+    # # Test if data intact after resizing
+    # for i in range(1, 13):
+    #     print(ht.get(f"line_{i}"))
 
     print("")
